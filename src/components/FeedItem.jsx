@@ -5,6 +5,19 @@ import { LIVE_HUB_COLORS } from '../config';
 import { liveSourceHubs } from '../hooks/useFeed';
 import { useIsMobile } from '../hooks/useMediaQuery';
 
+/** Subtle "this came from a real service" marker (A5). */
+function LiveChip() {
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full bg-civic-green/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-civic-green"
+      title="Live from a connected civic service"
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-civic-green animate-pulse" />
+      Live
+    </span>
+  );
+}
+
 export function FeedItem({ item, onViewInHub }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const hub =
@@ -46,8 +59,9 @@ export function FeedItem({ item, onViewInHub }) {
               <HubIcon icon={hub?.icon} size={16} />
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-medium leading-tight" style={{ color: colors.text }}>
-                {hub?.shortName}
+              <div className="flex items-center gap-2 text-sm font-medium leading-tight" style={{ color: colors.text }}>
+                <span>{hub?.shortName}</span>
+                {item.live && <LiveChip />}
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
                 <span className="flex items-center gap-1 min-w-0">
@@ -66,14 +80,28 @@ export function FeedItem({ item, onViewInHub }) {
         </h3>
 
         <div className="mb-3">
-          <button
-            onClick={handleViewInHub}
-            className="text-sm font-medium inline-flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors"
-            style={{ color: colors.text, backgroundColor: colors.bg }}
-          >
-            View in {hub?.shortName}
-            <ChevronRightIcon size={14} />
-          </button>
+          {item.live ? (
+            <a
+              href={item.actionUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-sm font-medium inline-flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors"
+              style={{ color: colors.text, backgroundColor: colors.bg }}
+            >
+              Open in {hub?.shortName}
+              <ChevronRightIcon size={14} />
+            </a>
+          ) : (
+            <button
+              onClick={handleViewInHub}
+              className="text-sm font-medium inline-flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors"
+              style={{ color: colors.text, backgroundColor: colors.bg }}
+            >
+              View in {hub?.shortName}
+              <ChevronRightIcon size={14} />
+            </button>
+          )}
         </div>
 
         <p className="text-[0.96rem] text-gray-500 leading-relaxed break-words">
@@ -137,6 +165,7 @@ export function FeedItem({ item, onViewInHub }) {
             <span className="text-sm font-medium" style={{ color: colors.text }}>
               {hub?.shortName}
             </span>
+            {item.live && <LiveChip />}
             <span className="text-gray-300">&middot;</span>
             <span className="text-sm text-gray-400 flex items-center gap-1">
               <span>{getContentTypeIcon(item.type)}</span>
@@ -182,15 +211,30 @@ export function FeedItem({ item, onViewInHub }) {
           )}
         </div>
 
-        {/* View in Hub button - top right, hub-colored pill style */}
-        <button
-          onClick={handleViewInHub}
-          className="text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
-          style={{ color: colors.text, backgroundColor: colors.bg }}
-        >
-          View in {hub?.shortName}
-          <ChevronRightIcon size={14} />
-        </button>
+        {/* View/Open button - top right, hub-colored pill style. Live items
+            click through to the real service's action_url in a new tab. */}
+        {item.live ? (
+          <a
+            href={item.actionUrl}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+            style={{ color: colors.text, backgroundColor: colors.bg }}
+          >
+            Open in {hub?.shortName}
+            <ChevronRightIcon size={14} />
+          </a>
+        ) : (
+          <button
+            onClick={handleViewInHub}
+            className="text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+            style={{ color: colors.text, backgroundColor: colors.bg }}
+          >
+            View in {hub?.shortName}
+            <ChevronRightIcon size={14} />
+          </button>
+        )}
       </div>
     </article>
   );

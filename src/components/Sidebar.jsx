@@ -82,6 +82,13 @@ export function Sidebar({ selectedHub, onSelectHub, onSelectAll }) {
                           selectedHub === hub.id ? 'text-gray-900' : 'text-gray-600'
                         }`}>
                           {hub.shortName}
+                          {hub.live && (
+                            <span
+                              className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-civic-green animate-pulse align-middle"
+                              title="Live source"
+                              data-testid={`live-dot-${hub.id}`}
+                            />
+                          )}
                         </span>
                         {hub.unreadCount > 0 && (
                           <span className="flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-civic-rust/10 text-civic-rust text-xs font-semibold flex items-center justify-center">

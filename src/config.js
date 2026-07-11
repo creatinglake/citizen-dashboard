@@ -36,3 +36,10 @@ export const LIVE_SOURCES = [
 
 /** Poll interval for live sources (ms). */
 export const FEED_POLL_MS = 20_000;
+
+/** Icon-chip colors for live sources — same shape as mockData.hubColors
+ * (which is preserved untouched; these overlay it for the live ids). */
+export const LIVE_HUB_COLORS = {
+  "floyd-hub": { bg: "#E3EBE8", text: "#386759" },
+  "rep-jamie": { bg: "#F4E1D2", text: "#8C4A2B" },
+};

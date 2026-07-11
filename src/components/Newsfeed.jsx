@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FeedItem } from './FeedItem';
-import { civicHubs, feedItems, getFeedItemsByHub, getHubById } from '../data/mockData';
+import { useFeedContext } from '../context/FeedContext.jsx';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { ChevronDownIcon } from './Icons';
 import { MobileBrandHeader } from './MobileBrandHeader';
@@ -9,10 +9,11 @@ export function Newsfeed({ selectedHub, onViewInHub, onSelectHub, onSelectAll })
   const isMobile = useIsMobile();
   const [isHubMenuOpen, setIsHubMenuOpen] = useState(false);
   const hubMenuRef = useRef(null);
-  const items = selectedHub ? getFeedItemsByHub(selectedHub) : feedItems;
+  const { items: allItems, itemsForHub, hubs } = useFeedContext();
+  const items = selectedHub ? itemsForHub(selectedHub) : allItems;
   const unreadCount = items.filter(item => !item.isRead).length;
   const totalCount = items.length;
-  const selectedHubData = selectedHub ? getHubById(selectedHub) : null;
+  const selectedHubData = selectedHub ? hubs.find((hub) => hub.id === selectedHub) : null;
 
   useEffect(() => {
     if (!isHubMenuOpen) return undefined;
@@ -80,7 +81,7 @@ export function Newsfeed({ selectedHub, onViewInHub, onSelectHub, onSelectAll })
                       {!selectedHub && <span className="text-civic-green">✓</span>}
                     </button>
 
-                    {civicHubs.map((hub) => {
+                    {hubs.map((hub) => {
                       const isSelected = selectedHub === hub.id;
                       return (
                         <button

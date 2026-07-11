@@ -1,32 +1,36 @@
 import React from 'react';
 import { HubIcon, ChevronRightIcon } from './Icons';
-import { civicHubs, hubColors, getHubsByType } from '../data/mockData';
+import { hubColors } from '../data/mockData';
+import { LIVE_HUB_COLORS } from '../config';
+import { useFeedContext } from '../context/FeedContext.jsx';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { MobileBrandHeader } from './MobileBrandHeader';
 
 const hubTypeLabels = {
+  live: 'Live Sources',
   jurisdiction: 'Jurisdictions',
   issue: 'Issues',
   organization: 'Organizations',
 };
 
-const hubTypeOrder = ['jurisdiction', 'issue', 'organization'];
+const hubTypeOrder = ['live', 'jurisdiction', 'issue', 'organization'];
 
 export function HubsList({ onSelectHub }) {
   const isMobile = useIsMobile();
+  const { hubs: allHubs } = useFeedContext();
 
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
       {isMobile ? (
-        <MobileBrandHeader title="My Civic Hubs" subtitle={`${civicHubs.length} hubs you follow`} />
+        <MobileBrandHeader title="My Civic Hubs" subtitle={`${allHubs.length} hubs you follow`} />
       ) : (
         <div className="px-6 py-5 border-b border-civic-green/10 bg-civic-cream/50">
           <h2 className="text-2xl font-heading font-semibold text-civic-green">
             My Civic Hubs
           </h2>
           <p className="text-sm text-civic-green/60 mt-1">
-            {civicHubs.length} hubs you follow
+            {allHubs.length} hubs you follow
           </p>
         </div>
       )}
@@ -34,7 +38,7 @@ export function HubsList({ onSelectHub }) {
       {/* Hubs List */}
       <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-4' : 'p-4'}`}>
         {hubTypeOrder.map((type) => {
-          const hubs = getHubsByType(type);
+          const hubs = allHubs.filter((hub) => hub.type === type);
           if (hubs.length === 0) return null;
           return (
             <div key={type} className="mb-4">
@@ -43,7 +47,7 @@ export function HubsList({ onSelectHub }) {
               </h3>
               <div className="space-y-2">
                 {hubs.map((hub) => {
-                  const colors = hubColors[hub.id] || { bg: '#F5F5F5', text: '#666' };
+                  const colors = hubColors[hub.id] || LIVE_HUB_COLORS[hub.id] || { bg: '#F5F5F5', text: '#666' };
                   return (
                     <button
                       key={hub.id}

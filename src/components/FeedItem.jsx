@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { getContentTypeIcon, HubIcon, ChevronRightIcon } from './Icons';
 import { getHubById, hubColors } from '../data/mockData';
+import { LIVE_HUB_COLORS } from '../config';
+import { liveSourceHubs } from '../hooks/useFeed';
 import { useIsMobile } from '../hooks/useMediaQuery';
 
 export function FeedItem({ item, onViewInHub }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const hub = getHubById(item.hubId);
-  const colors = hubColors[item.hubId] || { bg: '#F5F5F5', text: '#666' };
+  const hub =
+    getHubById(item.hubId) || liveSourceHubs.find((h) => h.id === item.hubId);
+  const colors =
+    hubColors[item.hubId] || LIVE_HUB_COLORS[item.hubId] || { bg: '#F5F5F5', text: '#666' };
   const isMobile = useIsMobile();
 
   const handleClick = () => {

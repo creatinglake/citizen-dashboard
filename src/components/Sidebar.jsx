@@ -1,18 +1,21 @@
 import React from 'react';
 import { HubIcon } from './Icons';
-import { civicHubs, hubColors, getTotalUnreadCount, getHubsByType } from '../data/mockData';
+import { hubColors } from '../data/mockData';
+import { LIVE_HUB_COLORS } from '../config';
+import { useFeedContext } from '../context/FeedContext.jsx';
 import civicLogo from '../assets/CivicSocial Logo SVG.svg';
 
 const hubTypeLabels = {
+  live: 'Live Sources',
   jurisdiction: 'Jurisdictions',
   issue: 'Issues',
   organization: 'Organizations',
 };
 
-const hubTypeOrder = ['jurisdiction', 'issue', 'organization'];
+const hubTypeOrder = ['live', 'jurisdiction', 'issue', 'organization'];
 
 export function Sidebar({ selectedHub, onSelectHub, onSelectAll }) {
-  const totalUnread = getTotalUnreadCount();
+  const { hubs, totalUnread } = useFeedContext();
 
   return (
     <aside className="w-full h-full bg-white flex flex-col">
@@ -49,16 +52,16 @@ export function Sidebar({ selectedHub, onSelectHub, onSelectAll }) {
           </h2>
 
           {hubTypeOrder.map((type) => {
-            const hubs = getHubsByType(type);
-            if (hubs.length === 0) return null;
+            const typeHubs = hubs.filter((hub) => hub.type === type);
+            if (typeHubs.length === 0) return null;
             return (
               <div key={type} className="mb-4">
                 <h3 className="px-5 text-[11px] font-medium text-gray-300 uppercase tracking-wider mb-2">
                   {hubTypeLabels[type]}
                 </h3>
                 <div className="space-y-1">
-                  {hubs.map((hub) => {
-                    const colors = hubColors[hub.id] || { bg: '#F5F5F5', text: '#666' };
+                  {typeHubs.map((hub) => {
+                    const colors = hubColors[hub.id] || LIVE_HUB_COLORS[hub.id] || { bg: '#F5F5F5', text: '#666' };
                     return (
                       <button
                         key={hub.id}

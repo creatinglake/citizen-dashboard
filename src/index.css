@@ -6,7 +6,9 @@
   --color-civic-teal: #294B52;
   --color-civic-rust: #C37B51;
   --color-civic-yellow: #EDC572;
-  --color-civic-cream: #F7F8FA;
+  /* Canonical American Landscape cream (shared/design-system/tokens.css).
+     Was #F7F8FA, drifted from tailwind.config.js — F1 reconciliation. */
+  --color-civic-cream: #F0EBE1;
 
   --font-heading: "Libre Franklin", sans-serif;
   --font-body: "Inter", sans-serif;

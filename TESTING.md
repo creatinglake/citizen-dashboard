@@ -61,11 +61,14 @@ Fill in per slice. Status: ✅ done · 🟡 partial · ⬜ none.
 
 | Area | Layer | Status | Notes |
 |---|---|---|---|
-| Test tooling + config installed | — | ⬜ | vitest + Testing Library + Playwright |
-| Classifier (`feedActivity`) parity | unit | ⬜ | byte-identical to Rep Space copy |
-| Event adapter + relativeTime + sortAt | unit | ⬜ | A3 |
-| `useFeed` blend + sort + errors | unit | ⬜ | A4 — demo data preserved on source failure |
-| Live marker + click-through | unit/e2e | ⬜ | A5 |
-| localStorage read-state | unit | ⬜ | A6 |
-| Blended feed end-to-end | e2e | ⬜ | mocked `/events` for both sources |
-| Demo-data-preserved guarantee | unit/e2e | ⬜ | feed intact when live sources empty/down |
+| Test tooling + config installed | — | ✅ | vitest + Testing Library + jsdom + Playwright (chromium); 2 smoke tests |
+| Classifier (`feedActivity`) parity | unit | ✅ | 7 tests pin hub + entity behavior; byte-identity sha-checked at copy time |
+| Event adapter + relativeTime + sortAt | unit | ✅ | 8 tests incl. malformed-event tolerance, href absolutization (A3) |
+| `useFeed` blend + sort + errors | unit | ✅ | 7 tests: blend/sort, one-source-down, all-down, empty, hub list, per-hub filter, 20s polling (A4) |
+| Live marker + click-through | unit/e2e | ✅ | 3 unit (chip, CTA anchor, demo behavior preserved) + e2e (A5) |
+| localStorage read-state | unit | ✅ | 6 tests: round-trip, corrupt JSON, markRead+counts, reload hydration, demo flags, card interactions (A6) |
+| Sources config + fetcher | unit | ✅ | 8 tests: LIVE_SOURCES shape, envelope unwrap, non-2xx, network failure (A1) |
+| Blended feed end-to-end | e2e | ✅ | 6 Playwright tests, both `/events` mocked: blend + markers, CTA href/target, source filter, one-source-down, all-down, read-state across reload |
+| Demo-data-preserved guarantee | unit/e2e | ✅ | standing tests at both layers — feed intact when live sources empty/down |
+
+**Totals: 38 unit/component tests (7 files) + 6 E2E. All green as of 2026-07-11.**

@@ -18,7 +18,7 @@ function LiveChip() {
   );
 }
 
-export function FeedItem({ item, onViewInHub }) {
+export function FeedItem({ item, onViewInHub, onMarkRead }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const hub =
     getHubById(item.hubId) || liveSourceHubs.find((h) => h.id === item.hubId);
@@ -26,8 +26,13 @@ export function FeedItem({ item, onViewInHub }) {
     hubColors[item.hubId] || LIVE_HUB_COLORS[item.hubId] || { bg: '#F5F5F5', text: '#666' };
   const isMobile = useIsMobile();
 
+  const markLiveRead = () => {
+    if (item.live && !item.isRead) onMarkRead?.(item.id);
+  };
+
   const handleClick = () => {
     setIsExpanded(!isExpanded);
+    markLiveRead();
   };
 
   const handleViewInHub = (e) => {
@@ -85,7 +90,7 @@ export function FeedItem({ item, onViewInHub }) {
               href={item.actionUrl}
               target="_blank"
               rel="noreferrer"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); markLiveRead(); }}
               className="text-sm font-medium inline-flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors"
               style={{ color: colors.text, backgroundColor: colors.bg }}
             >
@@ -218,7 +223,7 @@ export function FeedItem({ item, onViewInHub }) {
             href={item.actionUrl}
             target="_blank"
             rel="noreferrer"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); markLiveRead(); }}
             className="text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
             style={{ color: colors.text, backgroundColor: colors.bg }}
           >

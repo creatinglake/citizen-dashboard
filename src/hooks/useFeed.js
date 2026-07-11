@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LIVE_SOURCES, FEED_POLL_MS } from "../config";
 import { getEvents } from "../services/feed";
 import { adaptEvents } from "../services/adaptEvents";
+import { loadReadIds, persistReadIds } from "../services/readState";
 import { feedItems as mockFeedItems, civicHubs } from "../data/mockData";
 
 // Anchor the demo items to "recently, in their original order": newest mock
@@ -44,7 +45,19 @@ export function useFeed() {
   const [liveBySource, setLiveBySource] = useState({});
   const [sourceStatus, setSourceStatus] = useState({});
   const [loading, setLoading] = useState(true);
+  // A6 — live-item read state, hydrated from localStorage.
+  const [readIds, setReadIds] = useState(loadReadIds);
   const mountedRef = useRef(true);
+
+  const markRead = useCallback((eventId) => {
+    setReadIds((prev) => {
+      if (prev.has(eventId)) return prev;
+      const next = new Set(prev);
+      next.add(eventId);
+      persistReadIds(next);
+      return next;
+    });
+  }, []);
 
   const refresh = useCallback(async () => {
     const results = await Promise.allSettled(
@@ -89,17 +102,21 @@ export function useFeed() {
   }, [refresh]);
 
   const items = useMemo(() => {
-    const live = Object.values(liveBySource).flat();
+    const live = Object.values(liveBySource)
+      .flat()
+      .map((item) => ({ ...item, isRead: readIds.has(item.id) }));
     return [...decoratedMockItems, ...live].sort((a, b) => b.sortAt - a.sortAt);
-  }, [liveBySource]);
+  }, [liveBySource, readIds]);
 
   const hubs = useMemo(() => {
     const liveWithCounts = liveSourceHubs.map((hub) => ({
       ...hub,
-      unreadCount: (liveBySource[hub.id] ?? []).filter((i) => !i.isRead).length,
+      unreadCount: (liveBySource[hub.id] ?? []).filter(
+        (i) => !readIds.has(i.id),
+      ).length,
     }));
     return [...civicHubs, ...liveWithCounts];
-  }, [liveBySource]);
+  }, [liveBySource, readIds]);
 
   const itemsForHub = useCallback(
     (hubId) => items.filter((item) => item.hubId === hubId),
@@ -119,5 +136,6 @@ export function useFeed() {
     sourceStatus,
     loading,
     refresh,
+    markRead,
   };
 }

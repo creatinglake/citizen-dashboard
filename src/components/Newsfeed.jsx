@@ -9,7 +9,7 @@ export function Newsfeed({ selectedHub, onViewInHub, onSelectHub, onSelectAll })
   const isMobile = useIsMobile();
   const [isHubMenuOpen, setIsHubMenuOpen] = useState(false);
   const hubMenuRef = useRef(null);
-  const { items: allItems, itemsForHub, hubs } = useFeedContext();
+  const { items: allItems, itemsForHub, hubs, markRead } = useFeedContext();
   const items = selectedHub ? itemsForHub(selectedHub) : allItems;
   const unreadCount = items.filter(item => !item.isRead).length;
   const totalCount = items.length;
@@ -141,6 +141,7 @@ export function Newsfeed({ selectedHub, onViewInHub, onSelectHub, onSelectAll })
                 key={item.id}
                 item={item}
                 onViewInHub={onViewInHub}
+                onMarkRead={markRead}
               />
             ))
           ) : (

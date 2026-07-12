@@ -57,6 +57,14 @@ export const LIVE_SOURCES = [
 /** Poll interval for live sources (ms). */
 export const FEED_POLL_MS = 20_000;
 
+/**
+ * Per-source cap on live feed items, newest first. Keeps the historical
+ * backfill to roughly "the last dozen" so a hub with months of activity
+ * doesn't drown the feed — new events always enter at the top and older
+ * ones roll off.
+ */
+export const LIVE_ITEM_LIMIT = 12;
+
 /** Icon-chip colors for live sources — same shape as mockData.hubColors
  * (which is preserved untouched; these overlay it for the live ids). */
 export const LIVE_HUB_COLORS = {

@@ -10,7 +10,7 @@
 //   - Sources are polled every FEED_POLL_MS while the dashboard is open.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LIVE_SOURCES, FEED_POLL_MS } from "../config";
+import { LIVE_SOURCES, FEED_POLL_MS, LIVE_ITEM_LIMIT } from "../config";
 import { getEvents } from "../services/feed";
 import { adaptEvents } from "../services/adaptEvents";
 import { loadReadIds, persistReadIds } from "../services/readState";
@@ -64,7 +64,12 @@ export function useFeed() {
     const results = await Promise.allSettled(
       LIVE_SOURCES.map(async (source) => ({
         id: source.id,
-        items: adaptEvents(await getEvents(source), source),
+        // /events is newest-first; the slice keeps the backfill to "the
+        // last dozen" per source — new events enter at the top, old roll off.
+        items: adaptEvents(await getEvents(source), source).slice(
+          0,
+          LIVE_ITEM_LIMIT,
+        ),
       })),
     );
     if (!mountedRef.current) return;

@@ -118,6 +118,101 @@ describe("adaptEvents", () => {
     expect(adaptEvents(undefined, SOURCE)).toEqual([]);
   });
 
+  it("extracts real titles from production hub payload shapes", () => {
+    const HUB = { id: "floyd-hub", name: "Floyd County Civic Hub" };
+    const base = {
+      timestamp: "2026-07-04T12:00:00.000Z",
+      actor: "user_abc",
+      action_url: "https://floyd.civic.social/process/proc_1",
+      meta: { visibility: "public" },
+    };
+    const hubEvents = [
+      {
+        ...base,
+        id: "evt_conv",
+        event_type: "civic.process.created",
+        process_id: "proc_conv",
+        data: {
+          process: {
+            type: "civic.polis_deliberation",
+            title: "What recreational equipment do you want to see built in Floyd?",
+          },
+        },
+      },
+      {
+        ...base,
+        id: "evt_prop",
+        event_type: "civic.proposal.submitted",
+        process_id: "proc_prop",
+        data: {
+          process: { type: "civic.proposal" },
+          proposal: { title: "A community tool library for Floyd" },
+        },
+      },
+      {
+        ...base,
+        id: "evt_proj",
+        event_type: "civic.project.created",
+        process_id: "proc_proj",
+        data: {
+          process: { type: "civic.project" },
+          project: { title: "Build a Community Skate Park in Floyd County" },
+        },
+      },
+      {
+        ...base,
+        id: "evt_ann",
+        event_type: "civic.process.result_published",
+        process_id: "proc_ann",
+        data: {
+          process: { type: "civic.announcement" },
+          announcement: {
+            title: "Board of Supervisors Regular Meeting 07/14/2026",
+            author_role: "Floyd County Government",
+            source: { origin: "floyd-news" },
+          },
+        },
+      },
+      {
+        ...base,
+        id: "evt_meet",
+        event_type: "civic.process.result_published",
+        process_id: "proc_meet",
+        data: {
+          meeting_summary: {
+            meeting_title: "Budget Workshop",
+            meeting_date: "2026-06-23",
+          },
+        },
+      },
+    ];
+
+    const items = adaptEvents(hubEvents, HUB);
+    const byId = Object.fromEntries(items.map((i) => [i.id, i]));
+
+    expect(byId.evt_conv.title).toBe(
+      "What recreational equipment do you want to see built in Floyd?",
+    );
+    expect(byId.evt_prop.title).toBe("A community tool library for Floyd");
+    expect(byId.evt_proj.title).toBe(
+      "Build a Community Skate Park in Floyd County",
+    );
+    expect(byId.evt_ann.title).toBe(
+      "Board of Supervisors Regular Meeting 07/14/2026",
+    );
+    expect(byId.evt_ann.author).toBe("Floyd County Government");
+    expect(byId.evt_meet.title).toBe("Meeting summary: Budget Workshop");
+    expect(byId.evt_meet.preview).toContain("2026-06-23");
+
+    // No card falls back to a bare pill headline anymore.
+    for (const item of items) {
+      expect(["New proposal", "New project", "New conversation"]).not.toContain(
+        item.title,
+      );
+      expect(item.preview.length).toBeGreaterThan(10);
+    }
+  });
+
   it("transplants stale localhost action_urls onto the source's real UI origin", () => {
     const prodSource = {
       id: "rep-jamie",

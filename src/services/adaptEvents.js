@@ -54,12 +54,30 @@ export function friendlyActor(actor) {
   return actor;
 }
 
+const str = (v) => (typeof v === "string" && v.trim() ? v : null);
+
+/**
+ * The real title of the thing an event points at. Hub events nest it in a
+ * per-type payload object (data.process.title on lifecycle events,
+ * data.proposal/.project/.announcement.title, meeting_summary.meeting_title);
+ * Rep Space events use flat data.title / data.topic.
+ */
+function titleOf(data) {
+  return (
+    str(data.title) ??
+    str(data.topic) ??
+    str(data.process?.title) ??
+    str(data.proposal?.title) ??
+    str(data.project?.title) ??
+    str(data.announcement?.title) ??
+    str(data.meeting_summary?.meeting_title) ??
+    null
+  );
+}
+
 function headline(event, activity) {
   const data = event.data ?? {};
-  const title =
-    (typeof data.title === "string" && data.title) ||
-    (typeof data.topic === "string" && data.topic) ||
-    null;
+  const title = titleOf(data);
 
   switch (activity.kind) {
     case "position":
@@ -75,9 +93,13 @@ function headline(event, activity) {
     case "vote-open":
       return title ? `Vote open: ${title}` : "A new advisory vote is open";
     case "vote-results":
-      return title ? `Results: ${title}` : "Advisory vote results published";
+      return title ? `Results: ${title}` : "Vote results published";
     case "conversation":
-      return title ? `Join the conversation: ${title}` : "A new conversation is open";
+      return title ?? "A new conversation is open";
+    case "meeting":
+      return title
+        ? `Meeting summary: ${title}`
+        : "A meeting summary was published";
     default:
       return title ?? activity.pill;
   }
@@ -85,14 +107,48 @@ function headline(event, activity) {
 
 function preview(event, activity, sourceName) {
   const data = event.data ?? {};
+  // Rep Space events sometimes carry body text; hub events are pointers
+  // (title + counts only), so most fall through to kind-aware phrasing.
   const detail =
-    (typeof data.statement === "string" && data.statement) ||
-    (typeof data.outcome_summary === "string" && data.outcome_summary) ||
-    (typeof data.body === "string" && data.body) ||
-    (typeof data.framing === "string" && data.framing) ||
-    null;
+    str(data.statement) ??
+    str(data.outcome_summary) ??
+    str(data.body) ??
+    str(data.framing);
   if (detail) return detail;
-  return `Live from ${sourceName}. Open it there to see details and participate.`;
+
+  switch (activity.kind) {
+    case "proposal":
+      return "A new proposal is collecting community support. Open it to read the full text and add yours.";
+    case "proposal-closed":
+      return "This proposal's support window has closed. Open it to see how it did.";
+    case "project-created":
+      return "A community project was published. Open it to see the plan and show your support.";
+    case "project-updated":
+      return "This community project posted an update.";
+    case "conversation":
+      return "A community conversation is open — read statements, vote on them, and add your own.";
+    case "conversation-results":
+      return "This conversation closed and its results are ready to read.";
+    case "vote-open":
+      return "Voting is open. Cast your ballot before it closes.";
+    case "vote-results":
+      return "The results are in. Open them to see the tally.";
+    case "announcement":
+    case "announcement-author": {
+      const author =
+        str(data.announcement?.author_display_name) ??
+        str(data.announcement?.author_role);
+      return author ? `Posted by ${author}.` : `An announcement from ${sourceName}.`;
+    }
+    case "meeting": {
+      const date = str(data.meeting_summary?.meeting_date) ?? str(data.meeting_date);
+      return date
+        ? `Summary of the ${date} meeting — decisions, votes, and discussion.`
+        : "A public meeting summary — decisions, votes, and discussion.";
+    }
+    default:
+      return `Live from ${sourceName}. Open it there to see details and participate.`;
+  }
 }
 
 /**
@@ -147,14 +203,19 @@ export function adaptEvents(events, source) {
       }
     }
 
+    const body = preview(event, activity, source.name);
+    const announcementAuthor =
+      str(event.data?.announcement?.author_display_name) ??
+      str(event.data?.announcement?.author_role);
+
     items.push({
       id: event.id,
       hubId: source.id,
       type: KIND_TO_TYPE[activity.kind] ?? "update",
       title: headline(event, activity),
-      preview: preview(event, activity, source.name),
-      fullContent: preview(event, activity, source.name),
-      author: friendlyActor(event.actor),
+      preview: body,
+      fullContent: body,
+      author: announcementAuthor ?? friendlyActor(event.actor),
       timestamp: relativeTime(event.timestamp),
       tags: [activity.pill],
       isRead: false,

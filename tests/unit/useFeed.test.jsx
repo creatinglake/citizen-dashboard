@@ -143,6 +143,29 @@ describe("useFeed — the blend", () => {
     ).toBe(true);
   });
 
+  it("caps the backfill at LIVE_ITEM_LIMIT per source, keeping the newest", async () => {
+    const many = Array.from({ length: 30 }, (_, i) =>
+      liveEvent(
+        `evt_bulk_${i}`,
+        "civic.position_posted",
+        new Date(Date.parse(NOW_ISH) - i * 60_000).toISOString(),
+        { topic: `Topic ${i}` },
+      ),
+    );
+    getEvents.mockImplementation(async (s) =>
+      s.id === "rep-jamie" ? many : [],
+    );
+
+    const { result } = renderHook(() => useFeed());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const repItems = result.current.itemsForHub("rep-jamie");
+    expect(repItems).toHaveLength(12);
+    // Newest survive the cap.
+    expect(repItems[0].id).toBe("evt_bulk_0");
+    expect(repItems.at(-1).id).toBe("evt_bulk_11");
+  });
+
   it("polls the sources on the configured interval", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     getEvents.mockResolvedValue([]);

@@ -96,16 +96,53 @@ test("blends demo and live items, live marker only on live items", async ({ page
   await expect(page.locator("aside").getByRole("button", { name: /rep\. rivera/i })).toBeVisible();
 });
 
-test("live CTA links to the event's action_url in a new tab", async ({ page }) => {
+test("live CTA opens the action_url inside the dashboard with the back sidebar", async ({ page }) => {
   await mockSources(page);
+  // Serve a stub page for the Rep Space UI so the iframe has something to load.
+  await page.route("http://localhost:5174/**", (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<h1>Rep Space stub</h1>",
+    }),
+  );
   await openDashboard(page);
 
-  const cta = page.getByRole("link", { name: /open in rep\. rivera/i }).first();
-  await expect(cta).toHaveAttribute(
-    "href",
+  await page
+    .getByRole("button", { name: /^open in rep\. rivera/i })
+    .first()
+    .click();
+
+  // ExternalView iframe pointed at the event's action_url + back sidebar.
+  const frame = page.locator("iframe[title='Rep. Jamie Rivera']");
+  await expect(frame).toBeVisible();
+  await expect(frame).toHaveAttribute(
+    "src",
     /localhost:5174\/space\/jamie-rivera/,
   );
-  await expect(cta).toHaveAttribute("target", "_blank");
+
+  // Back returns to the dashboard feed.
+  await page.getByRole("button", { name: /back/i }).click();
+  await expect(page.getByText("Vote open: E2E Dark Sky vote")).toBeVisible();
+});
+
+test("sidebar open-hub icon opens the source homepage in-dashboard", async ({ page }) => {
+  await mockSources(page);
+  await page.route("http://localhost:5174/**", (route) =>
+    route.fulfill({ contentType: "text/html", body: "<h1>stub</h1>" }),
+  );
+  await openDashboard(page);
+
+  await page
+    .locator("aside")
+    .getByRole("button", { name: "Open Rep. Jamie Rivera", exact: true })
+    .click();
+
+  const frame = page.locator("iframe[title='Rep. Jamie Rivera']");
+  await expect(frame).toBeVisible();
+  await expect(frame).toHaveAttribute(
+    "src",
+    /localhost:5174\/space\/jamie-rivera$/,
+  );
 });
 
 test("selecting a live source narrows the feed to it", async ({ page }) => {

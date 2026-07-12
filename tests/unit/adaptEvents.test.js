@@ -117,4 +117,34 @@ describe("adaptEvents", () => {
   it("returns [] for a non-array input", () => {
     expect(adaptEvents(undefined, SOURCE)).toEqual([]);
   });
+
+  it("transplants stale localhost action_urls onto the source's real UI origin", () => {
+    const prodSource = {
+      id: "rep-jamie",
+      name: "Rep. Jamie Rivera",
+      uiOrigin: "https://representative.civic.social",
+      homeUrl: "https://representative.civic.social/space/jamie-rivera",
+    };
+    const [item] = adaptEvents(
+      [entityEvent({ action_url: "http://localhost:3001/space/jamie-rivera" })],
+      prodSource,
+    );
+    expect(item.actionUrl).toBe(
+      "https://representative.civic.social/space/jamie-rivera",
+    );
+
+    // A correct production action_url passes through untouched.
+    const [ok] = adaptEvents(
+      [
+        entityEvent({
+          id: "evt_ok2",
+          action_url: "https://representative.civic.social/space/jamie-rivera/votes",
+        }),
+      ],
+      prodSource,
+    );
+    expect(ok.actionUrl).toBe(
+      "https://representative.civic.social/space/jamie-rivera/votes",
+    );
+  });
 });

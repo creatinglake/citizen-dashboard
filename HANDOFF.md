@@ -61,6 +61,15 @@ representative-space/ui: npx vite --port 5174  → :5174
 citizen-dashboard:      npm run dev            → :5173
 ```
 
+### Session 1b — in-dashboard hub opening + production readiness (2026-07-12)
+
+- **Live click-throughs now open inside the dashboard** (ExternalView iframe + the Back-to-Dashboard sidebar — same pattern as the civic tools), per Adam's direction. Feed-item CTAs deep-link via `action_url`; new ↗ icons on the Live Sources entries (desktop Sidebar + mobile HubsList) open each source's homepage (`homeUrl` in config: hub root / Jamie's space page). Falls back to a new tab if a FeedItem renders without the App handler.
+- **Follows stay hardcoded** (decision): `LIVE_SOURCES` is the follow list; follow buttons/DID come later.
+- `config.js` gained UI-home resolution: prod mounts API under `/api` on the UI domain, so `homeUrl` defaults to the API base minus `/api`; local dev overrides for split origins. New optional env: `VITE_HUB_HOME_URL`, `VITE_REP_HOME_URL`.
+- `adaptEvents` transplants **stale localhost action_urls** onto the source's real UI origin — production Rep Space events were emitted before its URL env was set and carry `http://localhost:3001` forever (stored events are immutable).
+- **Production recon (2026-07-12):** Floyd Hub `https://floyd.civic.social/api/events` → public JSON, prod-domain action_urls ✅, but CORS pins out foreign origins (needs the dashboard origin added to `CIVIC_ALLOWED_ORIGINS`). Rep Space `https://representative.civic.social/api/events` → public, CORS `*` ✅, but old code (37 events, localhost action_urls; new branch unpushed). **Neither prod UI sends X-Frame-Options/CSP → in-dashboard iframing works.**
+- Tests: 39 unit + 7 e2e green (CTA contract updated to in-dashboard; new adapter-rewrite + sidebar-icon coverage).
+
 ### Incomplete / follow-ups
 - Sub-pages (Sample Ballot, Representative Profile, Contact Reps) intentionally stay on mock data.
 - Follow/PDS subscriptions, identity, participation actions: deferred by design (static `LIVE_SOURCES`).

@@ -6,8 +6,24 @@
 // To follow the incumbent (Pat Morgan) instead of the candidate, change
 // `spacePath` below — one line (see HANDOFF Session 0 open question).
 
+// API base (where /events lives) and UI home (where a person browses).
+// In production both services mount the API under /api on the same domain
+// as their UI (e.g. https://floyd.civic.social/api), so the UI home
+// defaults to the API base with the /api suffix stripped. Local dev splits
+// origins (API :3000/:3001, UI :5173/:5174), so the home URLs are set
+// explicitly there.
 const HUB_URL = import.meta.env.VITE_HUB_URL || "http://localhost:3000";
 const REP_URL = import.meta.env.VITE_REP_URL || "http://localhost:3001";
+
+const stripApiSuffix = (url) => url.replace(/\/api\/?$/, "");
+
+const HUB_HOME =
+  import.meta.env.VITE_HUB_HOME_URL || stripApiSuffix(HUB_URL);
+const REP_HOME =
+  import.meta.env.VITE_REP_HOME_URL ||
+  (REP_URL.startsWith("http://localhost")
+    ? "http://localhost:5174"
+    : stripApiSuffix(REP_URL));
 
 export const LIVE_SOURCES = [
   {
@@ -15,6 +31,8 @@ export const LIVE_SOURCES = [
     name: "Floyd County Civic Hub",
     shortName: "Floyd Hub",
     baseUrl: HUB_URL,
+    homeUrl: HUB_HOME,
+    uiOrigin: new URL(HUB_HOME).origin,
     kind: "hub",
     live: true,
     icon: "capitol",
@@ -27,6 +45,8 @@ export const LIVE_SOURCES = [
     baseUrl: REP_URL,
     // Only this space's events are pulled from the Rep Space service.
     spacePath: "/events?space_slug=jamie-rivera",
+    homeUrl: `${REP_HOME}/space/jamie-rivera`,
+    uiOrigin: new URL(REP_HOME).origin,
     kind: "entity",
     live: true,
     icon: "users",

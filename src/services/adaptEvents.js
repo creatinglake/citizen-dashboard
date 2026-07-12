@@ -132,6 +132,21 @@ export function adaptEvents(events, source) {
       actionUrl = event.action_url;
     }
 
+    // Stored events are immutable, and some production data was emitted
+    // before the services' UI base env vars were set — those events carry
+    // localhost action_urls forever. When we know the source's real UI
+    // origin (and it isn't itself localhost), transplant the path onto it.
+    if (source.uiOrigin && !source.uiOrigin.startsWith("http://localhost")) {
+      try {
+        const parsed = new URL(actionUrl);
+        if (/^localhost$|^127\.0\.0\.1$/.test(parsed.hostname)) {
+          actionUrl = source.uiOrigin + parsed.pathname + parsed.search + parsed.hash;
+        }
+      } catch {
+        actionUrl = source.homeUrl ?? actionUrl;
+      }
+    }
+
     items.push({
       id: event.id,
       hubId: source.id,

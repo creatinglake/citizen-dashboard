@@ -5,7 +5,7 @@ import { useIsMobile } from '../hooks/useMediaQuery';
 import { ChevronDownIcon } from './Icons';
 import { MobileBrandHeader } from './MobileBrandHeader';
 
-export function Newsfeed({ selectedHub, onViewInHub, onSelectHub, onSelectAll }) {
+export function Newsfeed({ selectedHub, onViewInHub, onSelectHub, onSelectAll, onOpenLive }) {
   const isMobile = useIsMobile();
   const [isHubMenuOpen, setIsHubMenuOpen] = useState(false);
   const hubMenuRef = useRef(null);
@@ -142,6 +142,7 @@ export function Newsfeed({ selectedHub, onViewInHub, onSelectHub, onSelectAll })
                 item={item}
                 onViewInHub={onViewInHub}
                 onMarkRead={markRead}
+                onOpenLive={onOpenLive}
               />
             ))
           ) : (

@@ -26,17 +26,24 @@ const liveItem = {
 };
 
 describe("FeedItem — live items", () => {
-  it("shows the Live chip and a CTA that opens the action_url in a new tab", () => {
-    render(<FeedItem item={liveItem} onViewInHub={() => {}} />);
+  it("shows the Live chip and a CTA that opens the action_url in-dashboard", () => {
+    const onOpenLive = vi.fn();
+    render(
+      <FeedItem item={liveItem} onViewInHub={() => {}} onOpenLive={onOpenLive} />,
+    );
 
     expect(screen.getByText("Live")).toBeInTheDocument();
 
-    const cta = screen.getByRole("link", { name: /open in rep\. rivera/i });
+    const cta = screen.getByRole("button", { name: /^open in rep\. rivera/i });
     expect(cta).toHaveAttribute(
-      "href",
+      "data-action-url",
       "http://localhost:5174/space/jamie-rivera/votes",
     );
-    expect(cta).toHaveAttribute("target", "_blank");
+    cta.click();
+    expect(onOpenLive).toHaveBeenCalledWith(
+      "Rep. Jamie Rivera",
+      "http://localhost:5174/space/jamie-rivera/votes",
+    );
   });
 
   it("demo items keep their behavior: no chip, View-in-hub button", () => {
@@ -45,7 +52,9 @@ describe("FeedItem — live items", () => {
     render(<FeedItem item={demo} onViewInHub={onView} />);
 
     expect(screen.queryByText("Live")).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /open in/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /^open in/i }),
+    ).not.toBeInTheDocument();
 
     // The card article itself is role="button", so match the CTA by its
     // accessible name starting with "View in".

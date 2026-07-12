@@ -1,5 +1,5 @@
 import React from 'react';
-import { HubIcon } from './Icons';
+import { HubIcon, ExternalLinkIcon } from './Icons';
 import { hubColors } from '../data/mockData';
 import { LIVE_HUB_COLORS } from '../config';
 import { useFeedContext } from '../context/FeedContext.jsx';
@@ -14,7 +14,7 @@ const hubTypeLabels = {
 
 const hubTypeOrder = ['live', 'jurisdiction', 'issue', 'organization'];
 
-export function Sidebar({ selectedHub, onSelectHub, onSelectAll }) {
+export function Sidebar({ selectedHub, onSelectHub, onSelectAll, onOpenLive }) {
   const { hubs, totalUnread } = useFeedContext();
 
   return (
@@ -93,6 +93,28 @@ export function Sidebar({ selectedHub, onSelectHub, onSelectAll }) {
                         {hub.unreadCount > 0 && (
                           <span className="flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-civic-rust/10 text-civic-rust text-xs font-semibold flex items-center justify-center">
                             {hub.unreadCount}
+                          </span>
+                        )}
+                        {hub.live && hub.homeUrl && onOpenLive && (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Open ${hub.name}`}
+                            title={`Open ${hub.name}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onOpenLive(hub.name, hub.homeUrl);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onOpenLive(hub.name, hub.homeUrl);
+                              }
+                            }}
+                            className="flex-shrink-0 p-1 rounded-md text-gray-300 hover:text-civic-green hover:bg-civic-green/10 transition-colors"
+                          >
+                            <ExternalLinkIcon size={14} />
                           </span>
                         )}
                       </button>

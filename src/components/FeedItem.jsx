@@ -18,7 +18,7 @@ function LiveChip() {
   );
 }
 
-export function FeedItem({ item, onViewInHub, onMarkRead }) {
+export function FeedItem({ item, onViewInHub, onMarkRead, onOpenLive }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const hub =
     getHubById(item.hubId) || liveSourceHubs.find((h) => h.id === item.hubId);
@@ -28,6 +28,19 @@ export function FeedItem({ item, onViewInHub, onMarkRead }) {
 
   const markLiveRead = () => {
     if (item.live && !item.isRead) onMarkRead?.(item.id);
+  };
+
+  // Live click-through: open the real service inside the dashboard
+  // (ExternalView + back sidebar). Falls back to a new tab when rendered
+  // without the App-level handler.
+  const handleOpenLive = (e) => {
+    e.stopPropagation();
+    markLiveRead();
+    if (onOpenLive) {
+      onOpenLive(hub?.name ?? 'Live source', item.actionUrl);
+    } else {
+      window.open(item.actionUrl, '_blank', 'noreferrer');
+    }
   };
 
   const handleClick = () => {
@@ -86,17 +99,15 @@ export function FeedItem({ item, onViewInHub, onMarkRead }) {
 
         <div className="mb-3">
           {item.live ? (
-            <a
-              href={item.actionUrl}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) => { e.stopPropagation(); markLiveRead(); }}
+            <button
+              data-action-url={item.actionUrl}
+              onClick={handleOpenLive}
               className="text-sm font-medium inline-flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors"
               style={{ color: colors.text, backgroundColor: colors.bg }}
             >
               Open in {hub?.shortName}
               <ChevronRightIcon size={14} />
-            </a>
+            </button>
           ) : (
             <button
               onClick={handleViewInHub}
@@ -219,17 +230,15 @@ export function FeedItem({ item, onViewInHub, onMarkRead }) {
         {/* View/Open button - top right, hub-colored pill style. Live items
             click through to the real service's action_url in a new tab. */}
         {item.live ? (
-          <a
-            href={item.actionUrl}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => { e.stopPropagation(); markLiveRead(); }}
+          <button
+            data-action-url={item.actionUrl}
+            onClick={handleOpenLive}
             className="text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
             style={{ color: colors.text, backgroundColor: colors.bg }}
           >
             Open in {hub?.shortName}
             <ChevronRightIcon size={14} />
-          </a>
+          </button>
         ) : (
           <button
             onClick={handleViewInHub}

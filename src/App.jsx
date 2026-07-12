@@ -46,6 +46,14 @@ function App() {
     setActivePage({ type: 'hub-page', data: { hub, highlightedItem: item } });
   };
 
+  // Open a live source's real site inside the dashboard (ExternalView +
+  // back sidebar) — same navigation pattern as the civic tools. Used by
+  // live feed-item CTAs (deep link via action_url) and the sidebar's
+  // open-hub icons (source home page).
+  const handleOpenLive = (title, url) => {
+    setExternalView({ isHub: false, title, url });
+  };
+
   // Handle opening external tool
   const handleOpenTool = (tool) => {
     if (isMobile && mobileTab === 'info') {
@@ -251,10 +259,11 @@ function App() {
             onViewInHub={handleViewInHub}
             onSelectHub={handleSelectHub}
             onSelectAll={handleSelectAll}
+            onOpenLive={handleOpenLive}
           />
         )}
         {mobileTab === 'hubs' && (
-          <HubsList onSelectHub={handleSelectHub} />
+          <HubsList onSelectHub={handleSelectHub} onOpenLive={handleOpenLive} />
         )}
 
         <MobileTabBar
@@ -275,6 +284,7 @@ function App() {
           selectedHub={selectedHub}
           onSelectHub={handleSelectHub}
           onSelectAll={handleSelectAll}
+          onOpenLive={handleOpenLive}
         />
       </div>
 
@@ -285,6 +295,7 @@ function App() {
           onViewInHub={handleViewInHub}
           onSelectHub={handleSelectHub}
           onSelectAll={handleSelectAll}
+          onOpenLive={handleOpenLive}
         />
       </div>
 

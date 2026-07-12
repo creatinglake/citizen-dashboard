@@ -1,5 +1,5 @@
 import React from 'react';
-import { HubIcon, ChevronRightIcon } from './Icons';
+import { HubIcon, ChevronRightIcon, ExternalLinkIcon } from './Icons';
 import { hubColors } from '../data/mockData';
 import { LIVE_HUB_COLORS } from '../config';
 import { useFeedContext } from '../context/FeedContext.jsx';
@@ -15,7 +15,7 @@ const hubTypeLabels = {
 
 const hubTypeOrder = ['live', 'jurisdiction', 'issue', 'organization'];
 
-export function HubsList({ onSelectHub }) {
+export function HubsList({ onSelectHub, onOpenLive }) {
   const isMobile = useIsMobile();
   const { hubs: allHubs } = useFeedContext();
 
@@ -70,6 +70,28 @@ export function HubsList({ onSelectHub }) {
                           </p>
                         )}
                       </div>
+                      {hub.live && hub.homeUrl && onOpenLive && (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`Open ${hub.name}`}
+                          title={`Open ${hub.name}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenLive(hub.name, hub.homeUrl);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onOpenLive(hub.name, hub.homeUrl);
+                            }
+                          }}
+                          className="flex-shrink-0 p-2 rounded-md text-civic-green/40 hover:text-civic-green hover:bg-civic-green/10 transition-colors"
+                        >
+                          <ExternalLinkIcon size={16} />
+                        </span>
+                      )}
                       <ChevronRightIcon size={20} className="text-civic-green/40" />
                     </button>
                   );

@@ -36,6 +36,7 @@ export const liveSourceHubs = LIVE_SOURCES.map((s) => ({
   shortName: s.shortName,
   icon: s.icon,
   color: s.color,
+  homeUrl: s.homeUrl,
   type: "live",
   live: true,
   unreadCount: 0,

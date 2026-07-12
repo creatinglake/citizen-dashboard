@@ -7,13 +7,13 @@ import { useIsMobile } from '../hooks/useMediaQuery';
 import { MobileBrandHeader } from './MobileBrandHeader';
 
 const hubTypeLabels = {
-  live: 'Live Sources',
   jurisdiction: 'Jurisdictions',
+  representative: 'Representatives',
   issue: 'Issues',
   organization: 'Organizations',
 };
 
-const hubTypeOrder = ['live', 'jurisdiction', 'issue', 'organization'];
+const hubTypeOrder = ['jurisdiction', 'representative', 'issue', 'organization'];
 
 export function HubsList({ onSelectHub, onOpenLive }) {
   const isMobile = useIsMobile();
@@ -64,6 +64,12 @@ export function HubsList({ onSelectHub, onOpenLive }) {
                         <h3 className="font-heading font-semibold text-civic-green truncate">
                           {hub.name}
                         </h3>
+                        {hub.live && (
+                          <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-civic-green/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-civic-green">
+                            <span className="h-1.5 w-1.5 rounded-full bg-civic-green animate-pulse" />
+                            Live source
+                          </span>
+                        )}
                         {hub.unreadCount > 0 && (
                           <p className="text-sm text-civic-rust mt-0.5">
                             {hub.unreadCount} new updates

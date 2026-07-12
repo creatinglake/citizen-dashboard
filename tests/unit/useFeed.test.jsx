@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
-import { feedItems as mockFeedItems } from "../../src/data/mockData";
+import { feedItems as allMockItems } from "../../src/data/mockData";
+import { SUPERSEDED_DEMO_HUBS } from "../../src/config";
+
+// The demo hubs superseded by live sources take their items with them.
+const mockFeedItems = allMockItems.filter(
+  (i) => !SUPERSEDED_DEMO_HUBS.has(i.hubId),
+);
 
 // Mock the fetch layer — useFeed's contract with the network is getEvents.
 vi.mock("../../src/services/feed", () => ({ getEvents: vi.fn() }));
@@ -117,11 +123,20 @@ describe("useFeed — the blend", () => {
     const { result } = renderHook(() => useFeed());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    const live = result.current.hubs.filter((h) => h.type === "live");
+    const live = result.current.hubs.filter((h) => h.live);
     expect(live.map((h) => h.id)).toEqual(["floyd-hub", "rep-jamie"]);
     expect(live.find((h) => h.id === "rep-jamie").unreadCount).toBe(1);
-    // Demo hubs are still all present.
-    expect(result.current.hubs.length).toBeGreaterThan(live.length);
+
+    // Live sources joined the regular sidebar groups (no separate section):
+    // the live hub is a jurisdiction, the rep a representative.
+    expect(live.find((h) => h.id === "floyd-hub").type).toBe("jurisdiction");
+    expect(live.find((h) => h.id === "floyd-hub").shortName).toBe("Floyd County");
+    expect(live.find((h) => h.id === "rep-jamie").type).toBe("representative");
+
+    // The superseded demo Floyd County hub is gone; other demo hubs remain.
+    const demoIds = result.current.hubs.filter((h) => !h.live).map((h) => h.id);
+    expect(demoIds).not.toContain("floyd-county");
+    expect(demoIds).toContain("floyd-town");
   });
 
   it("filters items per hub, live and demo alike", async () => {

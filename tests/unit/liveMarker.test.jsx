@@ -63,8 +63,8 @@ describe("FeedItem — live items", () => {
   });
 });
 
-describe("Sidebar — live sources", () => {
-  it("lists the Live Sources group with live dots", async () => {
+describe("Sidebar — live sources inside the regular groups", () => {
+  it("shows the live hub as the Floyd County jurisdiction and the rep under Representatives, with LIVE SOURCE pills", async () => {
     render(
       <FeedProvider>
         <Sidebar selectedHub={null} onSelectHub={() => {}} onSelectAll={() => {}} />
@@ -72,13 +72,19 @@ describe("Sidebar — live sources", () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByText("Live Sources")).toBeInTheDocument(),
+      expect(screen.getByText("Representatives")).toBeInTheDocument(),
     );
-    expect(screen.getByText("Floyd Hub")).toBeInTheDocument();
+    // No separate live section anymore.
+    expect(screen.queryByText("Live Sources")).not.toBeInTheDocument();
+
+    // The live hub IS the Floyd County entry (demo twin removed → exactly one).
+    expect(screen.getAllByText("Floyd County")).toHaveLength(1);
     expect(screen.getByText("Rep. Rivera")).toBeInTheDocument();
-    expect(screen.getByTestId("live-dot-floyd-hub")).toBeInTheDocument();
-    expect(screen.getByTestId("live-dot-rep-jamie")).toBeInTheDocument();
-    // Demo hubs still listed alongside.
-    expect(screen.getByText("Floyd County")).toBeInTheDocument();
+    expect(screen.getByTestId("live-pill-floyd-hub")).toHaveTextContent(/live source/i);
+    expect(screen.getByTestId("live-pill-rep-jamie")).toHaveTextContent(/live source/i);
+
+    // Remaining demo hubs still listed.
+    expect(screen.getByText("Floyd Town")).toBeInTheDocument();
+    expect(screen.getByText("Floyd Schools")).toBeInTheDocument();
   });
 });

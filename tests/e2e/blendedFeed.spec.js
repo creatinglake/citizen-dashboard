@@ -91,8 +91,13 @@ test("blends demo and live items, live marker only on live items", async ({ page
   // Exactly the three live cards carry the Live chip.
   await expect(page.getByText("Live", { exact: true })).toHaveCount(3);
 
-  // Sidebar shows the live sources group + demo hubs.
-  await expect(page.getByText("Live Sources")).toBeVisible();
+  // Live sources sit inside the regular sidebar groups with LIVE pills.
+  const aside = page.locator("aside");
+  await expect(
+    aside.getByRole("heading", { name: "Representatives", exact: true }),
+  ).toBeVisible();
+  await expect(aside.getByText("Live Sources")).toBeHidden();
+  await expect(aside.getByText("Live source").first()).toBeVisible();
   await expect(page.locator("aside").getByRole("button", { name: /rep\. rivera/i })).toBeVisible();
 });
 

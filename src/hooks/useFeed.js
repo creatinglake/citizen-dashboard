@@ -10,7 +10,12 @@
 //   - Sources are polled every FEED_POLL_MS while the dashboard is open.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LIVE_SOURCES, FEED_POLL_MS, LIVE_ITEM_LIMIT } from "../config";
+import {
+  LIVE_SOURCES,
+  FEED_POLL_MS,
+  LIVE_ITEM_LIMIT,
+  SUPERSEDED_DEMO_HUBS,
+} from "../config";
 import { getEvents } from "../services/feed";
 import { adaptEvents } from "../services/adaptEvents";
 import { loadReadIds, persistReadIds } from "../services/readState";
@@ -23,13 +28,20 @@ const BOOT = Date.now();
 const MOCK_SORT_STEP_MS = 45 * 60 * 1000;
 const MOCK_BASE_OFFSET_MS = 60 * 60 * 1000; // demo starts "an hour ago"
 
-const decoratedMockItems = mockFeedItems.map((item, index) => ({
-  ...item,
-  live: false,
-  sortAt: BOOT - MOCK_BASE_OFFSET_MS - index * MOCK_SORT_STEP_MS,
-}));
+const decoratedMockItems = mockFeedItems
+  // Demo hubs superseded by a live source take their mock items with them —
+  // the real Floyd County data replaces the fake Floyd County data.
+  .filter((item) => !SUPERSEDED_DEMO_HUBS.has(item.hubId))
+  .map((item, index) => ({
+    ...item,
+    live: false,
+    sortAt: BOOT - MOCK_BASE_OFFSET_MS - index * MOCK_SORT_STEP_MS,
+  }));
 
-/** Live sources presented in the same shape as demo hub entries. */
+const keptDemoHubs = civicHubs.filter((h) => !SUPERSEDED_DEMO_HUBS.has(h.id));
+
+/** Live sources presented in the same shape as demo hub entries, grouped
+ * into the regular sidebar categories (no separate "live" section). */
 export const liveSourceHubs = LIVE_SOURCES.map((s) => ({
   id: s.id,
   name: s.name,
@@ -37,7 +49,7 @@ export const liveSourceHubs = LIVE_SOURCES.map((s) => ({
   icon: s.icon,
   color: s.color,
   homeUrl: s.homeUrl,
-  type: "live",
+  type: s.sidebarGroup,
   live: true,
   unreadCount: 0,
 }));
@@ -121,7 +133,8 @@ export function useFeed() {
         (i) => !readIds.has(i.id),
       ).length,
     }));
-    return [...civicHubs, ...liveWithCounts];
+    // Live sources first so they lead their sidebar group.
+    return [...liveWithCounts, ...keptDemoHubs];
   }, [liveBySource, readIds]);
 
   const itemsForHub = useCallback(

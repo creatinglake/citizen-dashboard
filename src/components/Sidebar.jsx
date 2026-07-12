@@ -6,13 +6,13 @@ import { useFeedContext } from '../context/FeedContext.jsx';
 import civicLogo from '../assets/CivicSocial Logo SVG.svg';
 
 const hubTypeLabels = {
-  live: 'Live Sources',
   jurisdiction: 'Jurisdictions',
+  representative: 'Representatives',
   issue: 'Issues',
   organization: 'Organizations',
 };
 
-const hubTypeOrder = ['live', 'jurisdiction', 'issue', 'organization'];
+const hubTypeOrder = ['jurisdiction', 'representative', 'issue', 'organization'];
 
 export function Sidebar({ selectedHub, onSelectHub, onSelectAll, onOpenLive }) {
   const { hubs, totalUnread } = useFeedContext();
@@ -78,16 +78,20 @@ export function Sidebar({ selectedHub, onSelectHub, onSelectAll, onOpenLive }) {
                         >
                           <HubIcon icon={hub.icon} size={18} />
                         </span>
-                        <span className={`flex-1 text-sm font-medium truncate ${
-                          selectedHub === hub.id ? 'text-gray-900' : 'text-gray-600'
-                        }`}>
-                          {hub.shortName}
+                        <span className="flex-1 min-w-0 flex flex-col items-start gap-0.5">
+                          <span className={`w-full text-sm font-medium truncate ${
+                            selectedHub === hub.id ? 'text-gray-900' : 'text-gray-600'
+                          }`}>
+                            {hub.shortName}
+                          </span>
                           {hub.live && (
                             <span
-                              className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-civic-green animate-pulse align-middle"
-                              title="Live source"
-                              data-testid={`live-dot-${hub.id}`}
-                            />
+                              className="inline-flex items-center gap-1 rounded-full bg-civic-green/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-civic-green"
+                              data-testid={`live-pill-${hub.id}`}
+                            >
+                              <span className="h-1 w-1 rounded-full bg-civic-green animate-pulse" />
+                              Live source
+                            </span>
                           )}
                         </span>
                         {hub.unreadCount > 0 && (

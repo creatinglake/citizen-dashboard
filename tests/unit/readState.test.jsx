@@ -3,8 +3,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor, act, render, screen } from "@testing-library/react";
 import { loadReadIds, persistReadIds } from "../../src/services/readState";
-import { feedItems as mockFeedItems } from "../../src/data/mockData";
+import { feedItems as allMockItems } from "../../src/data/mockData";
+import { SUPERSEDED_DEMO_HUBS } from "../../src/config";
 import { FeedItem } from "../../src/components/FeedItem";
+
+// Superseded demo hubs (live-replaced) take their items with them.
+const mockFeedItems = allMockItems.filter(
+  (i) => !SUPERSEDED_DEMO_HUBS.has(i.hubId),
+);
 
 vi.mock("../../src/services/feed", () => ({ getEvents: vi.fn() }));
 import { getEvents } from "../../src/services/feed";

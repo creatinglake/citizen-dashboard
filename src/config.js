@@ -25,15 +25,21 @@ const REP_HOME =
     ? "http://localhost:5174"
     : stripApiSuffix(REP_URL));
 
+// Live sources sit inside the regular sidebar groups (sidebarGroup), not a
+// separate "Live Sources" section — the real Floyd County hub IS the Floyd
+// County jurisdiction entry (it replaces the demo hub of the same name),
+// and the Rep Space lives under Representatives. Cards carry a LIVE SOURCE
+// pill instead.
 export const LIVE_SOURCES = [
   {
     id: "floyd-hub",
     name: "Floyd County Civic Hub",
-    shortName: "Floyd Hub",
+    shortName: "Floyd County",
     baseUrl: HUB_URL,
     homeUrl: HUB_HOME,
     uiOrigin: new URL(HUB_HOME).origin,
     kind: "hub",
+    sidebarGroup: "jurisdiction",
     live: true,
     icon: "capitol",
     color: "#386759",
@@ -48,11 +54,17 @@ export const LIVE_SOURCES = [
     homeUrl: `${REP_HOME}/space/jamie-rivera`,
     uiOrigin: new URL(REP_HOME).origin,
     kind: "entity",
+    sidebarGroup: "representative",
     live: true,
     icon: "users",
     color: "#C37B51",
   },
 ];
+
+/** Demo hubs superseded by a live source (the real service replaces the
+ * mock of the same thing). Their demo feed items are filtered out too —
+ * mockData.js itself stays untouched. */
+export const SUPERSEDED_DEMO_HUBS = new Set(["floyd-county"]);
 
 /** Poll interval for live sources (ms). */
 export const FEED_POLL_MS = 20_000;

@@ -74,3 +74,26 @@ citizen-dashboard:      npm run dev            → :5173
 - Sub-pages (Sample Ballot, Representative Profile, Contact Reps) intentionally stay on mock data.
 - Follow/PDS subscriptions, identity, participation actions: deferred by design (static `LIVE_SOURCES`).
 - Live-item read state is per-browser (localStorage) — fine for the demo, a PDS concern later.
+
+---
+
+## Session 2 — Compact feed cards + public Vercel deployment — 2026-07-12
+
+**Status: the Dashboard is public and live** at **https://citizen-dashboard-ashy.vercel.app**, pulling real Floyd County events from `https://floyd.civic.social/api/events` (and Rep. Rivera's space from `https://representative.civic.social/api`).
+
+### Card redesign (desktop)
+`FeedItem.jsx` desktop layout restructured to cut vertical space: the header row now holds only icon + meta + title with the View/Open button top-right, and the preview text / tags / expanded author moved **out of the icon-indented column to span the full card width** below the header. Padding tightened (`px-8 py-7` → `px-6 py-5`), icon 44→40px. Mobile layout unchanged. 41 unit + 7 e2e tests green after the change.
+
+### Deployment (Vercel, project `citizen-dashboard`, team creatinglakes-projects)
+- The Vercel project existed (created earlier today via `vercel link`) but its Production env vars `VITE_HUB_URL` / `VITE_REP_URL` are **Sensitive-type** — `vercel env pull` shows them as empty strings by design; they were re-set with `vercel env add --force` to `https://floyd.civic.social/api` / `https://representative.civic.social/api`.
+- **Hub CORS unblocked:** civic-hub Production `CIVIC_ALLOWED_ORIGINS` was only `https://floyd.civic.social`; now also includes `https://citizen-dashboard-ashy.vercel.app` and `https://citizen-dashboard-creatinglakes-projects.vercel.app`. Applied via `vercel redeploy` of the unchanged production deployment (same code, new env), re-aliased to floyd.civic.social.
+- Dashboard deployed with `vercel deploy --prod`; stable aliases: `citizen-dashboard-ashy.vercel.app` (public), plus team-scoped ones.
+
+### Verified in production
+Deployed bundle carries the real service URLs (no localhost). Live browser check on the public URL: Floyd County appears as a LIVE SOURCE with 12 items (cap) + Rep. Rivera 12, 41 items total; CORS fetch from the dashboard origin returns 254 hub events; live CTAs carry floyd.civic.social action_urls; “Open in Floyd County” opens the real hub inside the dashboard (ExternalView + back sidebar).
+
+### Follow-ups
+- **Custom domain** (e.g. `citizen.civic.social`): civic.social DNS is hosted third-party, so it needs a CNAME added there + `vercel domains add` + appending the new origin to the hub's `CIVIC_ALLOWED_ORIGINS`.
+- Floyd hub is in **private beta**: click-throughs land on its sign-in/browse gate for anonymous visitors — hub-side policy, not a dashboard issue.
+- Rep Space production still runs the older branch (its events carry localhost action_urls; the adapter's origin-transplant covers it). Pushing the new Rep Space branch is a separate task.
+- Vercel deploys are CLI-driven (no Git integration connected); connect the GitHub repo to auto-deploy on push if desired.

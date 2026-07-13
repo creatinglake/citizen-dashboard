@@ -152,7 +152,7 @@ export function FeedItem({ item, onViewInHub, onMarkRead, onOpenLive }) {
 
   return (
     <article
-      className={`card feed-item px-8 py-7 relative ${isExpanded ? 'expanded' : ''}`}
+      className={`card feed-item px-6 py-5 relative ${isExpanded ? 'expanded' : ''}`}
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -164,20 +164,21 @@ export function FeedItem({ item, onViewInHub, onMarkRead, onOpenLive }) {
       }}
       aria-expanded={isExpanded}
     >
-      {/* Top row: Hub icon + meta on left, View button on right */}
-      <div className="flex items-start gap-5">
+      {/* Header row: Hub icon + meta + title on left, View button on right.
+          Body text below spans the full card width to keep cards short. */}
+      <div className="flex items-start gap-4">
         {/* Hub Icon */}
         <div
-          className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
+          className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
           style={{ backgroundColor: colors.bg, color: colors.text }}
         >
-          <HubIcon icon={hub?.icon} size={20} />
+          <HubIcon icon={hub?.icon} size={18} />
         </div>
 
-        {/* Content */}
+        {/* Meta + title */}
         <div className="flex-1 min-w-0">
           {/* Hub name, type, timestamp */}
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1.5">
             <span className="text-sm font-medium" style={{ color: colors.text }}>
               {hub?.shortName}
             </span>
@@ -192,39 +193,9 @@ export function FeedItem({ item, onViewInHub, onMarkRead, onOpenLive }) {
           </div>
 
           {/* Title */}
-          <h3 className="font-heading font-semibold text-gray-900 leading-snug mb-2.5">
+          <h3 className="font-heading font-semibold text-gray-900 leading-snug">
             {item.title}
           </h3>
-
-          {/* Preview or full content */}
-          <p className="text-sm text-gray-500 leading-relaxed">
-            {isExpanded ? (
-              <span className="whitespace-pre-line">{item.fullContent}</span>
-            ) : (
-              item.preview
-            )}
-          </p>
-
-          {/* Tags */}
-          {item.tags && item.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {item.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs px-2.5 py-1 bg-gray-100 text-gray-500 rounded-full"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Author shown when expanded */}
-          {isExpanded && (
-            <div className="mt-5 pt-4 border-t border-gray-100 animate-fadeIn">
-              <span className="text-xs text-gray-400">{item.author}</span>
-            </div>
-          )}
         </div>
 
         {/* View/Open button - top right, hub-colored pill style. Live items
@@ -250,6 +221,36 @@ export function FeedItem({ item, onViewInHub, onMarkRead, onOpenLive }) {
           </button>
         )}
       </div>
+
+      {/* Preview or full content — full card width, below the header row */}
+      <p className="text-sm text-gray-500 leading-relaxed mt-3">
+        {isExpanded ? (
+          <span className="whitespace-pre-line">{item.fullContent}</span>
+        ) : (
+          item.preview
+        )}
+      </p>
+
+      {/* Tags */}
+      {item.tags && item.tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-3">
+          {item.tags.map((tag) => (
+            <span
+              key={tag}
+              className="text-xs px-2.5 py-1 bg-gray-100 text-gray-500 rounded-full"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Author shown when expanded */}
+      {isExpanded && (
+        <div className="mt-4 pt-3 border-t border-gray-100 animate-fadeIn">
+          <span className="text-xs text-gray-400">{item.author}</span>
+        </div>
+      )}
     </article>
   );
 }
